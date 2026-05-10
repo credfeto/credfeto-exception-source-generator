@@ -11,6 +11,8 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ## [Unreleased]
 ### Security
 ### Added
+- Credfeto.Exceptions.SourceGenerator: Roslyn incremental source generator that generates standard exception constructors for partial exception classes
+- Credfeto.Exceptions.SourceGenerator.CodeFixes: Roslyn code fix provider (EXCGEN001) that offers to convert existing exception classes to use the source generator
 ### Fixed
 ### Changed
 - die() must output to stderr so error messages are not swallowed by stdout pipelines
