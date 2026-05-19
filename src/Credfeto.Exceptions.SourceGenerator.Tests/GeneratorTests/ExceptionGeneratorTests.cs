@@ -128,6 +128,33 @@ public sealed class ExceptionGeneratorTests : TestBase
     }
 
     [Fact]
+    public async Task PublicAbstractExceptionGeneratesWithAbstractModifierAndProtectedConstructors()
+    {
+        const string source = """
+            using System;
+
+            namespace MyApp;
+
+            public abstract partial class BaseException : Exception;
+            """;
+
+        IReadOnlyList<string> generated = await RunGeneratorAsync(source, TestContext.Current.CancellationToken);
+
+        Assert.Single(generated);
+
+        string code = generated[0];
+        Assert.Contains("public abstract partial class BaseException : Exception", code, StringComparison.Ordinal);
+        Assert.Contains("protected BaseException()", code, StringComparison.Ordinal);
+        Assert.Contains("protected BaseException(string? message)", code, StringComparison.Ordinal);
+        Assert.Contains(
+            "protected BaseException(string? message, Exception? innerException)",
+            code,
+            StringComparison.Ordinal
+        );
+        Assert.DoesNotContain("public BaseException()", code, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task InternalSealedExceptionGeneratesCorrectModifiers()
     {
         const string source = """

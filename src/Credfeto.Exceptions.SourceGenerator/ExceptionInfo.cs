@@ -5,7 +5,7 @@ namespace Credfeto.Exceptions.SourceGenerator;
 /// <summary>
 ///     Holds the information extracted from a partial exception class declaration needed to generate constructors.
 /// </summary>
-[DebuggerDisplay("{Namespace,nq}.{ClassName,nq} ({AccessModifier,nq}) Sealed={IsSealed}")]
+[DebuggerDisplay("{Namespace,nq}.{ClassName,nq} ({AccessModifier,nq}) Sealed={IsSealed} Abstract={IsAbstract}")]
 internal readonly struct ExceptionInfo
 {
     /// <summary>
@@ -15,12 +15,14 @@ internal readonly struct ExceptionInfo
     /// <param name="className">The simple name of the exception class.</param>
     /// <param name="accessModifier">The access modifier keyword (e.g. <c>public</c>, <c>internal</c>).</param>
     /// <param name="isSealed">Whether the class is declared <c>sealed</c>.</param>
+    /// <param name="isAbstract">Whether the class is declared <c>abstract</c>.</param>
     /// <param name="description">The value from a <c>[Description]</c> attribute, or <see langword="null" /> if absent.</param>
     public ExceptionInfo(
         string? namespaceName,
         string className,
         string accessModifier,
         bool isSealed,
+        bool isAbstract,
         string? description
     )
     {
@@ -28,6 +30,7 @@ internal readonly struct ExceptionInfo
         this.ClassName = className;
         this.AccessModifier = accessModifier;
         this.IsSealed = isSealed;
+        this.IsAbstract = isAbstract;
         this.Description = description;
     }
 
@@ -42,6 +45,9 @@ internal readonly struct ExceptionInfo
 
     /// <summary>Gets a value indicating whether the class is sealed.</summary>
     public bool IsSealed { get; }
+
+    /// <summary>Gets a value indicating whether the class is abstract.</summary>
+    public bool IsAbstract { get; }
 
     /// <summary>Gets the description from a <c>[Description]</c> attribute, or <see langword="null" /> if absent.</summary>
     public string? Description { get; }

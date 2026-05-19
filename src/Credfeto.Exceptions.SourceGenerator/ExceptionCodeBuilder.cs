@@ -22,9 +22,9 @@ internal static class ExceptionCodeBuilder
         sb.AppendLine("{");
         AppendDefaultConstructor(sb, info);
         sb.AppendLine();
-        AppendMessageConstructor(sb, info.ClassName);
+        AppendMessageConstructor(sb, info);
         sb.AppendLine();
-        AppendMessageAndInnerExceptionConstructor(sb, info.ClassName);
+        AppendMessageAndInnerExceptionConstructor(sb, info);
         sb.AppendLine("}");
 
         return sb.ToString();
@@ -50,9 +50,11 @@ internal static class ExceptionCodeBuilder
 
     private static void AppendClassDeclaration(StringBuilder sb, in ExceptionInfo info)
     {
+        string abstractModifier = info.IsAbstract ? " abstract" : string.Empty;
         string sealedModifier = info.IsSealed ? " sealed" : string.Empty;
 
         sb.Append(info.AccessModifier)
+            .Append(abstractModifier)
             .Append(sealedModifier)
             .Append(" partial class ")
             .Append(info.ClassName)
@@ -61,31 +63,43 @@ internal static class ExceptionCodeBuilder
 
     private static void AppendDefaultConstructor(StringBuilder sb, in ExceptionInfo info)
     {
+        string access = ConstructorAccess(info);
+
         if (info.Description is not null)
         {
             string escapedDescription = EscapeString(info.Description);
-            sb.Append("    public ").Append(info.ClassName).AppendLine("()");
+            sb.Append("    ").Append(access).Append(' ').Append(info.ClassName).AppendLine("()");
             sb.Append("        : this(\"").Append(escapedDescription).AppendLine("\")");
             sb.AppendLine("    {");
             sb.AppendLine("    }");
         }
         else
         {
-            sb.Append("    public ").Append(info.ClassName).AppendLine("() { }");
+            sb.Append("    ").Append(access).Append(' ').Append(info.ClassName).AppendLine("() { }");
         }
     }
 
-    private static void AppendMessageConstructor(StringBuilder sb, string className)
+    private static void AppendMessageConstructor(StringBuilder sb, in ExceptionInfo info)
     {
-        sb.Append("    public ").Append(className).AppendLine("(string? message)");
+        sb.Append("    ")
+            .Append(ConstructorAccess(info))
+            .Append(' ')
+            .Append(info.ClassName)
+            .AppendLine("(string? message)");
         sb.AppendLine("        : base(message) { }");
     }
 
-    private static void AppendMessageAndInnerExceptionConstructor(StringBuilder sb, string className)
+    private static void AppendMessageAndInnerExceptionConstructor(StringBuilder sb, in ExceptionInfo info)
     {
-        sb.Append("    public ").Append(className).AppendLine("(string? message, Exception? innerException)");
+        sb.Append("    ")
+            .Append(ConstructorAccess(info))
+            .Append(' ')
+            .Append(info.ClassName)
+            .AppendLine("(string? message, Exception? innerException)");
         sb.AppendLine("        : base(message: message, innerException: innerException) { }");
     }
+
+    private static string ConstructorAccess(in ExceptionInfo info) => info.IsAbstract ? "protected" : "public";
 
     private static string EscapeString(string value)
     {

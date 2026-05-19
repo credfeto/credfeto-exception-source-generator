@@ -65,6 +65,7 @@ public sealed class ExceptionGenerator : IIncrementalGenerator
             className: symbol.Name,
             accessModifier: GetAccessModifier(symbol.DeclaredAccessibility),
             isSealed: symbol.IsSealed,
+            isAbstract: symbol.IsAbstract,
             description: description
         );
     }

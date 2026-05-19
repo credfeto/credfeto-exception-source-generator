@@ -13,6 +13,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Added
 - Credfeto.Exceptions.SourceGenerator: Roslyn incremental source generator that generates standard exception constructors for partial exception classes
 - Credfeto.Exceptions.SourceGenerator.CodeFixes: Roslyn code fix provider (EXCGEN001) that offers to convert existing exception classes to use the source generator
+- Support for abstract partial exception classes; constructors are generated as protected
 ### Fixed
 - All three projects now pass FunFair.BuildCheck: added missing properties, analyzer packages, and fixed code quality issues flagged by the newly enabled analyzers
 ### Changed
