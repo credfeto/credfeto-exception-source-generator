@@ -16,6 +16,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Support for abstract partial exception classes; constructors are generated as protected
 ### Fixed
 - All three projects now pass FunFair.BuildCheck: added missing properties, analyzer packages, and fixed code quality issues flagged by the newly enabled analyzers
+- Implement IEquatable<ExceptionInfo> for correct incremental generator caching; fix DebuggerDisplay for global-namespace classes; replace nullable throw-on-null select with HasValue/GetValueOrDefault
 ### Changed
 - die() must output to stderr so error messages are not swallowed by stdout pipelines
 ### Deprecated

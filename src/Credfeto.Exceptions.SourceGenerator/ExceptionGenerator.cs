@@ -22,11 +22,8 @@ public sealed class ExceptionGenerator : IIncrementalGenerator
                 predicate: static (node, _) => IsPartialClassWithBase(node),
                 transform: static (ctx, token) => GetExceptionInfo(ctx, token)
             )
-            .Where(static info => info is not null)
-            .Select(
-                static (info, _) =>
-                    info ?? throw new InvalidOperationException("Expected non-null info after Where filter")
-            );
+            .Where(static info => info.HasValue)
+            .Select(static (info, _) => info.GetValueOrDefault());
 
         context.RegisterSourceOutput(exceptionInfos, static (spc, info) => Execute(spc, info));
     }
