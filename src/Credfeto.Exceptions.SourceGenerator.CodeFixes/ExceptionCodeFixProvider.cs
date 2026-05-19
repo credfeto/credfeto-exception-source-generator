@@ -1,3 +1,4 @@
+﻿using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
@@ -22,7 +23,7 @@ public sealed class ExceptionCodeFixProvider : CodeFixProvider
     private const string Title = "Convert to source-generated exception constructors";
 
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(ExceptionMissingConstructorAnalyzer.DiagnosticId);
+    public override ImmutableArray<string> FixableDiagnosticIds => [ExceptionMissingConstructorAnalyzer.DiagnosticId];
 
     /// <inheritdoc />
     public override FixAllProvider GetFixAllProvider()
@@ -44,22 +45,30 @@ public sealed class ExceptionCodeFixProvider : CodeFixProvider
         Microsoft.CodeAnalysis.Text.TextSpan diagnosticSpan = diagnostic.Location.SourceSpan;
 
         ClassDeclarationSyntax? classDecl = root.FindToken(diagnosticSpan.Start)
-                                                .Parent?.AncestorsAndSelf()
-                                                .OfType<ClassDeclarationSyntax>()
-                                                .FirstOrDefault();
+            .Parent?.AncestorsAndSelf()
+            .OfType<ClassDeclarationSyntax>()
+            .FirstOrDefault();
 
         if (classDecl is null)
         {
             return;
         }
 
-        context.RegisterCodeFix(action: CodeAction.Create(title: Title,
-                                                          createChangedDocument: ct => ConvertToPartialAsync(context.Document, classDecl, ct),
-                                                          equivalenceKey: Title),
-                                diagnostic: diagnostic);
+        context.RegisterCodeFix(
+            action: CodeAction.Create(
+                title: Title,
+                createChangedDocument: ct => ConvertToPartialAsync(context.Document, classDecl, ct),
+                equivalenceKey: Title
+            ),
+            diagnostic: diagnostic
+        );
     }
 
-    private static async Task<Document> ConvertToPartialAsync(Document document, ClassDeclarationSyntax classDecl, CancellationToken cancellationToken)
+    private static async Task<Document> ConvertToPartialAsync(
+        Document document,
+        ClassDeclarationSyntax classDecl,
+        CancellationToken cancellationToken
+    )
     {
         SyntaxNode? root = await document.GetSyntaxRootAsync(cancellationToken);
 
@@ -68,24 +77,24 @@ public sealed class ExceptionCodeFixProvider : CodeFixProvider
             return document;
         }
 
-        // Add the partial modifier
-        SyntaxToken partialToken = SyntaxFactory.Token(SyntaxKind.PartialKeyword)
-                                               .WithTrailingTrivia(SyntaxFactory.Space);
+        SyntaxToken partialToken = SyntaxFactory
+            .Token(SyntaxKind.PartialKeyword)
+            .WithTrailingTrivia(SyntaxFactory.Space);
 
         SyntaxTokenList updatedModifiers = classDecl.Modifiers.Add(partialToken);
 
-        // Remove standard constructors that will be source-generated
         SyntaxList<MemberDeclarationSyntax> updatedMembers = RemoveStandardConstructors(classDecl.Members);
 
-        ClassDeclarationSyntax updatedClassDecl = classDecl.WithModifiers(updatedModifiers)
-                                                           .WithMembers(updatedMembers);
+        ClassDeclarationSyntax updatedClassDecl = classDecl.WithModifiers(updatedModifiers).WithMembers(updatedMembers);
 
         SyntaxNode updatedRoot = root.ReplaceNode(classDecl, updatedClassDecl);
 
         return document.WithSyntaxRoot(updatedRoot);
     }
 
-    private static SyntaxList<MemberDeclarationSyntax> RemoveStandardConstructors(SyntaxList<MemberDeclarationSyntax> members)
+    private static SyntaxList<MemberDeclarationSyntax> RemoveStandardConstructors(
+        in SyntaxList<MemberDeclarationSyntax> members
+    )
     {
         SyntaxList<MemberDeclarationSyntax> result = members;
 
@@ -119,7 +128,7 @@ public sealed class ExceptionCodeFixProvider : CodeFixProvider
 
         ParameterSyntax param = ctor.ParameterList.Parameters[0];
 
-        return param.Identifier.Text == "message";
+        return string.Equals(param.Identifier.Text, "message", StringComparison.Ordinal);
     }
 
     private static bool IsMessageAndInnerExceptionConstructor(ConstructorDeclarationSyntax ctor)
@@ -132,6 +141,7 @@ public sealed class ExceptionCodeFixProvider : CodeFixProvider
         ParameterSyntax messageParam = ctor.ParameterList.Parameters[0];
         ParameterSyntax innerExceptionParam = ctor.ParameterList.Parameters[1];
 
-        return messageParam.Identifier.Text == "message" && innerExceptionParam.Identifier.Text == "innerException";
+        return string.Equals(messageParam.Identifier.Text, "message", StringComparison.Ordinal)
+            && string.Equals(innerExceptionParam.Identifier.Text, "innerException", StringComparison.Ordinal);
     }
 }

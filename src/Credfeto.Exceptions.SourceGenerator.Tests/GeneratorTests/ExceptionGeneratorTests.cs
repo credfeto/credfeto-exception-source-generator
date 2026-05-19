@@ -1,6 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using FunFair.Test.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -10,215 +12,263 @@ namespace Credfeto.Exceptions.SourceGenerator.Tests.GeneratorTests;
 
 public sealed class ExceptionGeneratorTests : TestBase
 {
-    private static IReadOnlyList<string> RunGenerator(string source)
+    private static async Task<IReadOnlyList<string>> RunGeneratorAsync(
+        string source,
+        CancellationToken cancellationToken
+    )
     {
-        SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(source);
+        SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(source, cancellationToken: cancellationToken);
 
-        IEnumerable<MetadataReference> references = AppDomain.CurrentDomain.GetAssemblies()
-                                                             .Where(a => !a.IsDynamic && !string.IsNullOrWhiteSpace(a.Location))
-                                                             .Select(a => MetadataReference.CreateFromFile(a.Location))
-                                                             .Cast<MetadataReference>();
+        IEnumerable<MetadataReference> references = AppDomain
+            .CurrentDomain.GetAssemblies()
+            .Where(a => !a.IsDynamic && !string.IsNullOrWhiteSpace(a.Location))
+            .Select(a => MetadataReference.CreateFromFile(a.Location))
+            .Cast<MetadataReference>();
 
-        CSharpCompilation compilation = CSharpCompilation.Create(assemblyName: "TestAssembly",
-                                                                 syntaxTrees: [syntaxTree],
-                                                                 references: references,
-                                                                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        CSharpCompilation compilation = CSharpCompilation.Create(
+            assemblyName: "TestAssembly",
+            syntaxTrees: [syntaxTree],
+            references: references,
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        );
 
         ExceptionGenerator generator = new();
         CSharpGeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = (CSharpGeneratorDriver)driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out _);
+        driver = (CSharpGeneratorDriver)
+            driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out _, cancellationToken);
 
         GeneratorDriverRunResult result = driver.GetRunResult();
 
-        return result.GeneratedTrees.Select(t => t.GetText()
-                                                  .ToString())
-                     .ToList();
+        List<string> texts = [];
+
+        foreach (SyntaxTree generatedTree in result.GeneratedTrees)
+        {
+            Microsoft.CodeAnalysis.Text.SourceText text = await generatedTree.GetTextAsync(cancellationToken);
+            texts.Add(text.ToString());
+        }
+
+        return texts;
     }
 
     [Fact]
-    public void SimplePublicSealedExceptionGeneratesThreeConstructors()
+    public async Task SimplePublicSealedExceptionGeneratesThreeConstructors()
     {
         const string source = """
-                              using System;
+            using System;
 
-                              namespace MyApp;
+            namespace MyApp;
 
-                              public partial sealed class ExampleException : Exception;
-                              """;
+            public partial sealed class ExampleException : Exception;
+            """;
 
-        IReadOnlyList<string> generated = RunGenerator(source);
+        IReadOnlyList<string> generated = await RunGeneratorAsync(source, TestContext.Current.CancellationToken);
 
         Assert.Single(generated);
 
         string code = generated[0];
-        Assert.Contains("public ExampleException()", code);
-        Assert.Contains("public ExampleException(string? message)", code);
-        Assert.Contains("public ExampleException(string? message, Exception? innerException)", code);
-        Assert.Contains(": base(message)", code);
-        Assert.Contains(": base(message: message, innerException: innerException)", code);
-        Assert.Contains("namespace MyApp;", code);
-        Assert.Contains("public sealed partial class ExampleException", code);
+        Assert.Contains("public ExampleException()", code, StringComparison.Ordinal);
+        Assert.Contains("public ExampleException(string? message)", code, StringComparison.Ordinal);
+        Assert.Contains(
+            "public ExampleException(string? message, Exception? innerException)",
+            code,
+            StringComparison.Ordinal
+        );
+        Assert.Contains(": base(message)", code, StringComparison.Ordinal);
+        Assert.Contains(": base(message: message, innerException: innerException)", code, StringComparison.Ordinal);
+        Assert.Contains("namespace MyApp;", code, StringComparison.Ordinal);
+        Assert.Contains("public sealed partial class ExampleException", code, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void ExceptionWithDescriptionAttributeGeneratesThisCallInDefaultConstructor()
+    public async Task ExceptionWithDescriptionAttributeGeneratesThisCallInDefaultConstructor()
     {
         const string source = """
-                              using System;
-                              using System.ComponentModel;
+            using System;
+            using System.ComponentModel;
 
-                              namespace MyApp;
+            namespace MyApp;
 
-                              [Description("Hello World")]
-                              public partial sealed class ExampleException : Exception;
-                              """;
+            [Description("Hello World")]
+            public partial sealed class ExampleException : Exception;
+            """;
 
-        IReadOnlyList<string> generated = RunGenerator(source);
+        IReadOnlyList<string> generated = await RunGeneratorAsync(source, TestContext.Current.CancellationToken);
 
         Assert.Single(generated);
 
         string code = generated[0];
-        Assert.Contains(""": this("Hello World")""", code);
-        Assert.Contains("public ExampleException(string? message)", code);
-        Assert.Contains("public ExampleException(string? message, Exception? innerException)", code);
-        Assert.DoesNotContain(": this(\"Hello World\")\r\n    { }", code);
+        Assert.Contains(""": this("Hello World")""", code, StringComparison.Ordinal);
+        Assert.Contains("public ExampleException(string? message)", code, StringComparison.Ordinal);
+        Assert.Contains(
+            "public ExampleException(string? message, Exception? innerException)",
+            code,
+            StringComparison.Ordinal
+        );
+        Assert.DoesNotContain(": this(\"Hello World\")\r\n    { }", code, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void PublicNonSealedExceptionGeneratesWithoutSealedModifier()
+    public async Task PublicNonSealedExceptionGeneratesWithoutSealedModifier()
     {
         const string source = """
-                              using System;
+            using System;
 
-                              namespace MyApp;
+            namespace MyApp;
 
-                              public partial class BaseException : Exception;
-                              """;
+            public partial class BaseException : Exception;
+            """;
 
-        IReadOnlyList<string> generated = RunGenerator(source);
+        IReadOnlyList<string> generated = await RunGeneratorAsync(source, TestContext.Current.CancellationToken);
 
         Assert.Single(generated);
 
         string code = generated[0];
-        Assert.Contains("public partial class BaseException : Exception", code);
-        Assert.DoesNotContain("sealed", code);
+        Assert.Contains("public partial class BaseException : Exception", code, StringComparison.Ordinal);
+        Assert.DoesNotContain("sealed", code, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void InternalSealedExceptionGeneratesCorrectModifiers()
+    public async Task PublicAbstractExceptionGeneratesWithAbstractModifierAndProtectedConstructors()
     {
         const string source = """
-                              using System;
+            using System;
 
-                              namespace MyApp;
+            namespace MyApp;
 
-                              internal partial sealed class InternalException : Exception;
-                              """;
+            public abstract partial class BaseException : Exception;
+            """;
 
-        IReadOnlyList<string> generated = RunGenerator(source);
+        IReadOnlyList<string> generated = await RunGeneratorAsync(source, TestContext.Current.CancellationToken);
 
         Assert.Single(generated);
 
         string code = generated[0];
-        Assert.Contains("internal sealed partial class InternalException : Exception", code);
+        Assert.Contains("public abstract partial class BaseException : Exception", code, StringComparison.Ordinal);
+        Assert.Contains("protected BaseException()", code, StringComparison.Ordinal);
+        Assert.Contains("protected BaseException(string? message)", code, StringComparison.Ordinal);
+        Assert.Contains(
+            "protected BaseException(string? message, Exception? innerException)",
+            code,
+            StringComparison.Ordinal
+        );
+        Assert.DoesNotContain("public BaseException()", code, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void NonExceptionClassIsIgnored()
+    public async Task InternalSealedExceptionGeneratesCorrectModifiers()
     {
         const string source = """
-                              namespace MyApp;
+            using System;
 
-                              public partial class NotAnException;
-                              """;
+            namespace MyApp;
 
-        IReadOnlyList<string> generated = RunGenerator(source);
+            internal partial sealed class InternalException : Exception;
+            """;
+
+        IReadOnlyList<string> generated = await RunGeneratorAsync(source, TestContext.Current.CancellationToken);
+
+        Assert.Single(generated);
+
+        string code = generated[0];
+        Assert.Contains("internal sealed partial class InternalException : Exception", code, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task NonExceptionClassIsIgnored()
+    {
+        const string source = """
+            namespace MyApp;
+
+            public partial class NotAnException;
+            """;
+
+        IReadOnlyList<string> generated = await RunGeneratorAsync(source, TestContext.Current.CancellationToken);
 
         Assert.Empty(generated);
     }
 
     [Fact]
-    public void NonPartialExceptionClassIsIgnored()
+    public async Task NonPartialExceptionClassIsIgnored()
     {
         const string source = """
-                              using System;
+            using System;
 
-                              namespace MyApp;
+            namespace MyApp;
 
-                              public sealed class NonPartialException : Exception
-                              {
-                                  public NonPartialException() { }
+            public sealed class NonPartialException : Exception
+            {
+                public NonPartialException() { }
 
-                                  public NonPartialException(string? message)
-                                      : base(message) { }
+                public NonPartialException(string? message)
+                    : base(message) { }
 
-                                  public NonPartialException(string? message, Exception? innerException)
-                                      : base(message: message, innerException: innerException) { }
-                              }
-                              """;
+                public NonPartialException(string? message, Exception? innerException)
+                    : base(message: message, innerException: innerException) { }
+            }
+            """;
 
-        IReadOnlyList<string> generated = RunGenerator(source);
+        IReadOnlyList<string> generated = await RunGeneratorAsync(source, TestContext.Current.CancellationToken);
 
         Assert.Empty(generated);
     }
 
     [Fact]
-    public void ExceptionClassInGlobalNamespaceGeneratesWithoutNamespaceDeclaration()
+    public async Task ExceptionClassInGlobalNamespaceGeneratesWithoutNamespaceDeclaration()
     {
         const string source = """
-                              using System;
+            using System;
 
-                              public partial sealed class GlobalException : Exception;
-                              """;
+            public partial sealed class GlobalException : Exception;
+            """;
 
-        IReadOnlyList<string> generated = RunGenerator(source);
+        IReadOnlyList<string> generated = await RunGeneratorAsync(source, TestContext.Current.CancellationToken);
 
         Assert.Single(generated);
 
         string code = generated[0];
-        Assert.DoesNotContain("namespace ", code);
-        Assert.Contains("public sealed partial class GlobalException : Exception", code);
-        Assert.Contains("public GlobalException()", code);
+        Assert.DoesNotContain("namespace ", code, StringComparison.Ordinal);
+        Assert.Contains("public sealed partial class GlobalException : Exception", code, StringComparison.Ordinal);
+        Assert.Contains("public GlobalException()", code, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void ExceptionWithSpecialCharactersInDescriptionIsEscaped()
+    public async Task ExceptionWithSpecialCharactersInDescriptionIsEscaped()
     {
         const string source = """
-                              using System;
-                              using System.ComponentModel;
+            using System;
+            using System.ComponentModel;
 
-                              namespace MyApp;
+            namespace MyApp;
 
-                              [Description("Say \"hello\" world")]
-                              public partial sealed class QuotedException : Exception;
-                              """;
+            [Description("Say \"hello\" world")]
+            public partial sealed class QuotedException : Exception;
+            """;
 
-        IReadOnlyList<string> generated = RunGenerator(source);
+        IReadOnlyList<string> generated = await RunGeneratorAsync(source, TestContext.Current.CancellationToken);
 
         Assert.Single(generated);
 
         string code = generated[0];
-        Assert.Contains(@": this(""Say \""hello\"" world"")", code);
+        Assert.Contains(@": this(""Say \""hello\"" world"")", code, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void GeneratedCodeContainsAutoGeneratedHeader()
+    public async Task GeneratedCodeContainsAutoGeneratedHeader()
     {
         const string source = """
-                              using System;
+            using System;
 
-                              namespace MyApp;
+            namespace MyApp;
 
-                              public partial sealed class ExampleException : Exception;
-                              """;
+            public partial sealed class ExampleException : Exception;
+            """;
 
-        IReadOnlyList<string> generated = RunGenerator(source);
+        IReadOnlyList<string> generated = await RunGeneratorAsync(source, TestContext.Current.CancellationToken);
 
         Assert.Single(generated);
 
         string code = generated[0];
-        Assert.StartsWith("// <auto-generated/>", code);
-        Assert.Contains("#nullable enable", code);
+        Assert.StartsWith("// <auto-generated/>", code, StringComparison.Ordinal);
+        Assert.Contains("#nullable enable", code, StringComparison.Ordinal);
     }
 }

@@ -124,6 +124,12 @@ The code fix will:
 - Add the `partial` modifier to the class declaration.
 - Remove the standard constructors (no-args, message, message + inner exception) so the source generator can generate them.
 
+## Analyzer Rules
+
+| Rule ID   | Category | Severity | Notes                                               |
+|-----------|----------|----------|-----------------------------------------------------|
+| EXCGEN001 | Design   | Info     | Exception class can use source-generated constructors |
+
 ## Technical Details
 
 - Uses the latest Roslyn **incremental source generator** APIs (`IIncrementalGenerator`).
