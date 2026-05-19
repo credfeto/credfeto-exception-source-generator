@@ -1,5 +1,6 @@
-using System.Threading;
+﻿using System;
 using System.Text;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -16,20 +17,30 @@ public sealed class ExceptionGenerator : IIncrementalGenerator
     /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        IncrementalValuesProvider<ExceptionInfo?> exceptionInfos = context.SyntaxProvider.CreateSyntaxProvider(
-                                                                                             predicate: static (node, _) => IsPartialClassWithBase(node),
-                                                                                             transform: static (ctx, token) => GetExceptionInfo(ctx, token))
-                                                                                         .Where(static info => info is not null);
+        IncrementalValuesProvider<ExceptionInfo> exceptionInfos = context
+            .SyntaxProvider.CreateSyntaxProvider(
+                predicate: static (node, _) => IsPartialClassWithBase(node),
+                transform: static (ctx, token) => GetExceptionInfo(ctx, token)
+            )
+            .Where(static info => info is not null)
+            .Select(
+                static (info, _) =>
+                    info ?? throw new InvalidOperationException("Expected non-null info after Where filter")
+            );
 
-        context.RegisterSourceOutput(exceptionInfos, static (spc, info) => Execute(spc, info!));
+        context.RegisterSourceOutput(exceptionInfos, static (spc, info) => Execute(spc, info));
     }
 
     private static bool IsPartialClassWithBase(SyntaxNode node)
     {
-        return node is ClassDeclarationSyntax { BaseList: not null } classDecl && classDecl.Modifiers.Any(SyntaxKind.PartialKeyword);
+        return node is ClassDeclarationSyntax { BaseList: not null } classDecl
+            && classDecl.Modifiers.Any(SyntaxKind.PartialKeyword);
     }
 
-    private static ExceptionInfo? GetExceptionInfo(GeneratorSyntaxContext context, CancellationToken cancellationToken)
+    private static ExceptionInfo? GetExceptionInfo(
+        in GeneratorSyntaxContext context,
+        CancellationToken cancellationToken
+    )
     {
         ClassDeclarationSyntax classDecl = (ClassDeclarationSyntax)context.Node;
 
@@ -49,11 +60,13 @@ public sealed class ExceptionGenerator : IIncrementalGenerator
             ? null
             : symbol.ContainingNamespace.ToDisplayString();
 
-        return new ExceptionInfo(Namespace: namespaceName,
-                                 ClassName: symbol.Name,
-                                 AccessModifier: GetAccessModifier(symbol.DeclaredAccessibility),
-                                 IsSealed: symbol.IsSealed,
-                                 Description: description);
+        return new ExceptionInfo(
+            namespaceName: namespaceName,
+            className: symbol.Name,
+            accessModifier: GetAccessModifier(symbol.DeclaredAccessibility),
+            isSealed: symbol.IsSealed,
+            description: description
+        );
     }
 
     private static bool IsExceptionDerivedType(INamedTypeSymbol symbol)
@@ -62,7 +75,7 @@ public sealed class ExceptionGenerator : IIncrementalGenerator
 
         while (baseType is not null)
         {
-            if (baseType.ToDisplayString() == "System.Exception")
+            if (string.Equals(baseType.ToDisplayString(), "System.Exception", StringComparison.Ordinal))
             {
                 return true;
             }
@@ -77,9 +90,15 @@ public sealed class ExceptionGenerator : IIncrementalGenerator
     {
         foreach (AttributeData attribute in symbol.GetAttributes())
         {
-            if (attribute.AttributeClass?.ToDisplayString() == "System.ComponentModel.DescriptionAttribute" &&
-                attribute.ConstructorArguments.Length > 0 &&
-                attribute.ConstructorArguments[0].Value is string description)
+            if (
+                string.Equals(
+                    attribute.AttributeClass?.ToDisplayString(),
+                    "System.ComponentModel.DescriptionAttribute",
+                    StringComparison.Ordinal
+                )
+                && attribute.ConstructorArguments.Length > 0
+                && attribute.ConstructorArguments[0].Value is string description
+            )
             {
                 return description;
             }
@@ -98,11 +117,11 @@ public sealed class ExceptionGenerator : IIncrementalGenerator
             Accessibility.Private => "private",
             Accessibility.ProtectedAndInternal => "private protected",
             Accessibility.ProtectedOrInternal => "protected internal",
-            _ => "public"
+            _ => "public",
         };
     }
 
-    private static void Execute(SourceProductionContext context, ExceptionInfo info)
+    private static void Execute(in SourceProductionContext context, in ExceptionInfo info)
     {
         string source = ExceptionCodeBuilder.Build(info);
         context.AddSource($"{info.ClassName}.g.cs", SourceText.From(source, Encoding.UTF8));

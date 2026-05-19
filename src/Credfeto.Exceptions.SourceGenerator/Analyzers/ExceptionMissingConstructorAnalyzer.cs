@@ -1,4 +1,6 @@
+﻿using System;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -18,16 +20,18 @@ public sealed class ExceptionMissingConstructorAnalyzer : DiagnosticAnalyzer
     /// </summary>
     public const string DiagnosticId = "EXCGEN001";
 
-    private static readonly DiagnosticDescriptor Rule = new(id: DiagnosticId,
-                                                            title: "Exception class can use source-generated constructors",
-                                                            messageFormat: "Exception class '{0}' has standard constructors that can be source-generated; consider making the class partial",
-                                                            category: "Design",
-                                                            defaultSeverity: DiagnosticSeverity.Info,
-                                                            isEnabledByDefault: true,
-                                                            description: "Exception classes with standard constructors should use the Credfeto.Exceptions.SourceGenerator source generator to reduce boilerplate.");
+    private static readonly DiagnosticDescriptor Rule = new(
+        id: DiagnosticId,
+        title: "Exception class can use source-generated constructors",
+        messageFormat: "Exception class '{0}' has standard constructors that can be source-generated; consider making the class partial",
+        category: "Design",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "Exception classes with standard constructors should use the Credfeto.Exceptions.SourceGenerator source generator to reduce boilerplate."
+    );
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -41,13 +45,14 @@ public sealed class ExceptionMissingConstructorAnalyzer : DiagnosticAnalyzer
     {
         ClassDeclarationSyntax classDecl = (ClassDeclarationSyntax)context.Node;
 
-        // Only analyse non-partial classes — partial classes are already using or could already use the generator
         if (classDecl.Modifiers.Any(SyntaxKind.PartialKeyword))
         {
             return;
         }
 
-        if (context.SemanticModel.GetDeclaredSymbol(classDecl, context.CancellationToken) is not INamedTypeSymbol symbol)
+        if (
+            context.SemanticModel.GetDeclaredSymbol(classDecl, context.CancellationToken) is not INamedTypeSymbol symbol
+        )
         {
             return;
         }
@@ -62,10 +67,16 @@ public sealed class ExceptionMissingConstructorAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        context.ReportDiagnostic(Diagnostic.Create(descriptor: Rule, location: classDecl.Identifier.GetLocation(), messageArgs: symbol.Name));
+        context.ReportDiagnostic(
+            Diagnostic.Create(descriptor: Rule, location: classDecl.Identifier.GetLocation(), messageArgs: symbol.Name)
+        );
     }
 
-    private static bool IsExceptionDerivedType(INamedTypeSymbol symbol, Compilation compilation, CancellationToken cancellationToken)
+    private static bool IsExceptionDerivedType(
+        INamedTypeSymbol symbol,
+        Compilation compilation,
+        CancellationToken cancellationToken
+    )
     {
         INamedTypeSymbol? exceptionType = compilation.GetTypeByMetadataName("System.Exception");
 
@@ -93,15 +104,9 @@ public sealed class ExceptionMissingConstructorAnalyzer : DiagnosticAnalyzer
 
     private static bool HasAnyStandardConstructor(INamedTypeSymbol symbol)
     {
-        foreach (IMethodSymbol constructor in symbol.Constructors)
-        {
-            if (IsDefaultConstructor(constructor) || IsMessageConstructor(constructor) || IsMessageAndInnerExceptionConstructor(constructor))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return symbol.Constructors.Any(c =>
+            IsDefaultConstructor(c) || IsMessageConstructor(c) || IsMessageAndInnerExceptionConstructor(c)
+        );
     }
 
     internal static bool IsDefaultConstructor(IMethodSymbol method)
@@ -118,7 +123,8 @@ public sealed class ExceptionMissingConstructorAnalyzer : DiagnosticAnalyzer
 
         IParameterSymbol param = method.Parameters[0];
 
-        return param.Type.SpecialType == SpecialType.System_String && param.Name == "message";
+        return param.Type.SpecialType == SpecialType.System_String
+            && string.Equals(param.Name, "message", StringComparison.Ordinal);
     }
 
     internal static bool IsMessageAndInnerExceptionConstructor(IMethodSymbol method)
@@ -131,9 +137,9 @@ public sealed class ExceptionMissingConstructorAnalyzer : DiagnosticAnalyzer
         IParameterSymbol messageParam = method.Parameters[0];
         IParameterSymbol innerExceptionParam = method.Parameters[1];
 
-        return messageParam.Type.SpecialType == SpecialType.System_String &&
-               messageParam.Name == "message" &&
-               innerExceptionParam.Type.ToDisplayString() == "System.Exception?" &&
-               innerExceptionParam.Name == "innerException";
+        return messageParam.Type.SpecialType == SpecialType.System_String
+            && string.Equals(messageParam.Name, "message", StringComparison.Ordinal)
+            && string.Equals(innerExceptionParam.Type.ToDisplayString(), "System.Exception?", StringComparison.Ordinal)
+            && string.Equals(innerExceptionParam.Name, "innerException", StringComparison.Ordinal);
     }
 }

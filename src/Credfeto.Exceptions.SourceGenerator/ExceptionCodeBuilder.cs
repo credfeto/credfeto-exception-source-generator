@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 
 namespace Credfeto.Exceptions.SourceGenerator;
 
@@ -12,7 +12,7 @@ internal static class ExceptionCodeBuilder
     /// </summary>
     /// <param name="info">The exception class information.</param>
     /// <returns>The generated C# source code.</returns>
-    public static string Build(ExceptionInfo info)
+    public static string Build(in ExceptionInfo info)
     {
         StringBuilder sb = new();
 
@@ -43,54 +43,57 @@ internal static class ExceptionCodeBuilder
     {
         if (namespaceName is not null)
         {
-            sb.AppendLine($"namespace {namespaceName};");
+            sb.Append("namespace ").Append(namespaceName).AppendLine(";");
             sb.AppendLine();
         }
     }
 
-    private static void AppendClassDeclaration(StringBuilder sb, ExceptionInfo info)
+    private static void AppendClassDeclaration(StringBuilder sb, in ExceptionInfo info)
     {
-        string sealedModifier = info.IsSealed
-            ? " sealed"
-            : string.Empty;
+        string sealedModifier = info.IsSealed ? " sealed" : string.Empty;
 
-        sb.AppendLine($"{info.AccessModifier}{sealedModifier} partial class {info.ClassName} : Exception");
+        sb.Append(info.AccessModifier)
+            .Append(sealedModifier)
+            .Append(" partial class ")
+            .Append(info.ClassName)
+            .AppendLine(" : Exception");
     }
 
-    private static void AppendDefaultConstructor(StringBuilder sb, ExceptionInfo info)
+    private static void AppendDefaultConstructor(StringBuilder sb, in ExceptionInfo info)
     {
         if (info.Description is not null)
         {
             string escapedDescription = EscapeString(info.Description);
-            sb.AppendLine($"    public {info.ClassName}()");
-            sb.AppendLine($"        : this(\"{escapedDescription}\")");
+            sb.Append("    public ").Append(info.ClassName).AppendLine("()");
+            sb.Append("        : this(\"").Append(escapedDescription).AppendLine("\")");
             sb.AppendLine("    {");
             sb.AppendLine("    }");
         }
         else
         {
-            sb.AppendLine($"    public {info.ClassName}() {{ }}");
+            sb.Append("    public ").Append(info.ClassName).AppendLine("() { }");
         }
     }
 
     private static void AppendMessageConstructor(StringBuilder sb, string className)
     {
-        sb.AppendLine($"    public {className}(string? message)");
+        sb.Append("    public ").Append(className).AppendLine("(string? message)");
         sb.AppendLine("        : base(message) { }");
     }
 
     private static void AppendMessageAndInnerExceptionConstructor(StringBuilder sb, string className)
     {
-        sb.AppendLine($"    public {className}(string? message, Exception? innerException)");
+        sb.Append("    public ").Append(className).AppendLine("(string? message, Exception? innerException)");
         sb.AppendLine("        : base(message: message, innerException: innerException) { }");
     }
 
     private static string EscapeString(string value)
     {
-        return value.Replace(@"\", @"\\")
-                    .Replace("\"", "\\\"")
-                    .Replace("\n", @"\n")
-                    .Replace("\r", @"\r")
-                    .Replace("\t", @"\t");
+        return value
+            .Replace(@"\", @"\\")
+            .Replace("\"", "\\\"")
+            .Replace("\n", @"\n")
+            .Replace("\r", @"\r")
+            .Replace("\t", @"\t");
     }
 }
