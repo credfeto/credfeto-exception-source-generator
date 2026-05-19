@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Credfeto.Exceptions.SourceGenerator.CodeFixes</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>true</IsPackable>
+    <Description>Roslyn code fix provider that offers to convert existing exception classes to use the Credfeto.Exceptions.SourceGenerator source generator.</Description>
+    <PackageTags>roslyn;code-fix;exception;csharp;analyzer</PackageTags>
+    <RepositoryUrl>https://github.com/credfeto/credfeto-exception-source-generator</RepositoryUrl>
+    <AnalyzerLanguage>cs</AnalyzerLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.14.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Credfeto.Exceptions.SourceGenerator\Credfeto.Exceptions.SourceGenerator.csproj" />
+  </ItemGroup>
+</Project>
