@@ -11,7 +11,6 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ## [Unreleased]
 ### Security
 ### Added
-- Unit test for exception code builder with abstract exceptions and special character escaping
 ### Fixed
 ### Changed
 ### Deprecated
@@ -20,6 +19,10 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 <!--
 Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
 -->
+## [0.0.2] - 2026-06-08
+### Added
+- Unit test for exception code builder with abstract exceptions and special character escaping
+
 ## [0.0.1] - 2026-06-08
 ### Added
 - Credfeto.Exceptions.SourceGenerator: Roslyn incremental source generator that generates standard exception constructors for partial exception classes
