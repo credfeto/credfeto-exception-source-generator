@@ -3,8 +3,9 @@
     <File Path="../CHANGELOG.md" />
     <File Path="../README.md" />
     <File Path="global.json" />
+    <File Path="KeepGeneratedFiles.props" />
+    <File Path="SourceGenerator.props" />
   </Folder>
   <Project Path="Credfeto.Exceptions.SourceGenerator/Credfeto.Exceptions.SourceGenerator.csproj" />
-  <Project Path="Credfeto.Exceptions.SourceGenerator.CodeFixes/Credfeto.Exceptions.SourceGenerator.CodeFixes.csproj" />
   <Project Path="Credfeto.Exceptions.SourceGenerator.Tests/Credfeto.Exceptions.SourceGenerator.Tests.csproj" />
 </Solution>
