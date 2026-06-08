@@ -11,6 +11,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ## [Unreleased]
 ### Security
 ### Added
+- Unit test for exception code builder with abstract exceptions and special character escaping
 ### Fixed
 ### Changed
 ### Deprecated
