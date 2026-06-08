@@ -11,6 +11,16 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ## [Unreleased]
 ### Security
 ### Added
+### Fixed
+### Changed
+### Deprecated
+### Removed
+### Deployment Changes
+<!--
+Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
+-->
+## [0.0.1] - 2026-06-08
+### Added
 - Credfeto.Exceptions.SourceGenerator: Roslyn incremental source generator that generates standard exception constructors for partial exception classes
 - Credfeto.Exceptions.SourceGenerator.CodeFixes: Roslyn code fix provider (EXCGEN001) that offers to convert existing exception classes to use the source generator
 - Support for abstract partial exception classes; constructors are generated as protected
@@ -19,10 +29,5 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Implement IEquatable<ExceptionInfo> for correct incremental generator caching; fix DebuggerDisplay for global-namespace classes; replace nullable throw-on-null select with HasValue/GetValueOrDefault
 ### Changed
 - die() must output to stderr so error messages are not swallowed by stdout pipelines
-### Deprecated
-### Removed
-### Deployment Changes
-<!--
-Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
--->
+
 ## [0.0.0] - Project created
