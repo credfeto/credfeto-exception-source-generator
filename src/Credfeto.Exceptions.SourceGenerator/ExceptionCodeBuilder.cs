@@ -64,8 +64,7 @@ internal static class ExceptionCodeBuilder
             .Append(abstractModifier)
             .Append(sealedModifier)
             .Append(" partial class ")
-            .Append(info.ClassName)
-            .AppendLine(" : Exception");
+            .Append(info.ClassName);
     }
 
     private static StringBuilder AppendDefaultConstructor(this StringBuilder sb, in ExceptionInfo info)
@@ -74,15 +73,13 @@ internal static class ExceptionCodeBuilder
 
         if (info.Description is not null)
         {
-            string escapedDescription = EscapeString(info.Description);
-
             return sb.Append("    ")
                 .Append(access)
                 .Append(' ')
                 .Append(info.ClassName)
                 .AppendLine("()")
                 .Append("        : this(\"")
-                .Append(escapedDescription)
+                .Append(EscapeString(info.Description))
                 .AppendLine("\")")
                 .AppendLine("    {")
                 .AppendLine("    }");
