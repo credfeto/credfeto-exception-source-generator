@@ -7,5 +7,4 @@
     <File Path="SourceGenerator.props" />
   </Folder>
   <Project Path="Credfeto.Exceptions.SourceGenerator/Credfeto.Exceptions.SourceGenerator.csproj" />
-  <Project Path="Credfeto.Exceptions.SourceGenerator.Tests/Credfeto.Exceptions.SourceGenerator.Tests.csproj" />
 </Solution>
