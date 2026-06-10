@@ -1,3 +1,5 @@
+--- # Dependabot: rebase open pull requests
+# Maintain in repo: funfair-server-template
 name: "Dependabot: Rebase"
 on:
   push:
@@ -10,6 +12,8 @@ concurrency:
   group: ${{github.workflow}}-${{github.ref}}
   cancel-in-progress: false
 
+permissions:
+  contents: read
 
 jobs:
   auto-rebase:
