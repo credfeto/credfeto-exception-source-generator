@@ -1,4 +1,5 @@
 --- # Build and deploy packages
+# Maintain in repo: funfair-server-template
 name: 'Build and deploy'
 description: 'Builds and deploys the source'
 inputs:
@@ -158,10 +159,13 @@ runs:
 
     - name: "Parameter Summary"
       uses: actions/github-script@v9.0.0
+      env:
+        NUGET_API_KEY: ${{inputs.NUGET_API_KEY}}
       with:
         script: |
+          if (process.env.NUGET_API_KEY) { core.setSecret(process.env.NUGET_API_KEY); }
           core.info('PROJECT_TO_PUBLISH: ${{inputs.PROJECT_TO_PUBLISH}}');
-          core.info('NUGET_API_KEY: ${{inputs.NUGET_API_KEY}}');
+          core.info('NUGET_API_KEY: ' + (process.env.NUGET_API_KEY ? '[set]' : '[not set]'));
           core.info('NUGET_FEED: ${{inputs.NUGET_FEED}}');
           core.info('NUGET_SYMBOL_FEED: ${{inputs.NUGET_SYMBOL_FEED}}');
           core.info('NUGET_PUBLIC_RESTORE_FEED_CACHE: ${{inputs.NUGET_PUBLIC_RESTORE_FEED_CACHE}}');
@@ -176,6 +180,7 @@ runs:
       shell: bash
       run: echo "GIT_BRANCH=$GITHUB_REF" >> "$GITHUB_ENV"
 
+# yamllint disable rule:line-length
     - name: "Check file existence"
       id: check_files
       shell: bash
@@ -191,6 +196,7 @@ runs:
         [[ -f healthcheck && '${{hashfiles('healthcheck')}}' != '' ]] && echo 'HEALTHCHECK_EXIST=true' || echo 'HEALTHCHECK_EXIST=false';
         [[ -f cloudformation.json && '${{hashfiles('cloudformation.json')}}' != '' ]] && echo 'CLOUDFORMATION_EXIST=true'  || echo 'CLOUDFORMATION_EXIST=false'
         } >> "$GITHUB_OUTPUT"
+# yamllint enable rule:line-length
 
     - name: "Check Files Results"
       uses: actions/github-script@v9.0.0
@@ -244,12 +250,18 @@ runs:
         DOCKER_USERNAME: ${{inputs.DOCKER_USERNAME}}
         DOCKER_ACCESS_TOKEN: ${{inputs.DOCKER_ACCESS_TOKEN}}
 
+# yamllint disable rule:line-length
     - name: "Check Build Tools Requirements"
       id: build_tools
       shell: bash
+      env:
+        CSPROJ_EXIST: ${{steps.check_files.outputs.CSPROJ_EXIST}}
+        SLN_EXIST: ${{steps.check_files.outputs.SLN_EXIST}}
+        NPM_EXIST_SRC: ${{steps.check_files.outputs.NPM_EXIST_SRC}}
+        NPM_EXIST_ROOT: ${{steps.check_files.outputs.NPM_EXIST_ROOT}}
       run: |
-        [[ (${{steps.check_files.outputs.CSPROJ_EXIST == 'true' && steps.check_files.outputs.SLN_EXIST == 'true'}}) || steps.check_files.outputs.NPM_EXIST_SRC == 'true' || steps.check_files.outputs.NPM_EXIST_ROOT == 'true' ]] && echo 'BUILD_ENV=true' >> "$GITHUB_OUTPUT" || echo 'BUILD_ENV=false' >> "$GITHUB_OUTPUT"
-        [[ (${{steps.check_files.outputs.CSPROJ_EXIST == 'true' && steps.check_files.outputs.SLN_EXIST == 'true'}}) || steps.check_files.outputs.NPM_EXIST_SRC == 'true' || steps.check_files.outputs.NPM_EXIST_ROOT == 'true' ]] && echo 'BUILD_ENV=true' >> "$GITHUB_OUTPUT" || echo 'BUILD_ENV=false' >> "$GITHUB_OUTPUT"
+        [[ ("$CSPROJ_EXIST" == 'true' && "$SLN_EXIST" == 'true') || "$NPM_EXIST_SRC" == 'true' || "$NPM_EXIST_ROOT" == 'true' ]] && echo 'BUILD_ENV=true' >> "$GITHUB_OUTPUT" || echo 'BUILD_ENV=false' >> "$GITHUB_OUTPUT"
+# yamllint enable rule:line-length
 
     - name: "Install Multi-push tool"
       if: |-
@@ -336,7 +348,6 @@ runs:
         SLEET_CONFIG: ${{inputs.SLEET_CONFIG}}
         SLEET_FEED: ${{inputs.SLEET_FEED}}
         GITHUB_TOKEN: ${{inputs.GITHUB_TOKEN}}
-        REPO_VISIBILITY: ${{inputs.REPO_VISIBILITY}}
         PROJECT_TO_PUBLISH: ${{inputs.PROJECT_TO_PUBLISH}}
         DOTNET_DOCKER_PLATFORM: ${{inputs.DOTNET_DOCKER_PLATFORM}}
 
@@ -348,8 +359,6 @@ runs:
       uses: ./.github/actions/npm
       with:
         BUILD_VERSION: ${{env.BUILD_VERSION}}
-        REPO_VISIBILITY: ${{inputs.REPO_VISIBILITY}}
-        NPM_PRODUCTION_PACKAGER_VERSION: ${{inputs.NPM_PRODUCTION_PACKAGER_VERSION}}
         NPM_CONTENT_PACKAGE_WALLET_PASSWORD: ${{inputs.NPM_CONTENT_PACKAGE_WALLET_PASSWORD}}
         NPM_PACKAGE_STORE_SIGNING_WALLET: ${{inputs.NPM_PACKAGE_STORE_SIGNING_WALLET}}
         NPM_PACKAGE_STORE_SIGNING_WALLET_PASSWORD: ${{inputs.NPM_PACKAGE_STORE_SIGNING_WALLET_PASSWORD}}
@@ -379,8 +388,7 @@ runs:
         steps.check_files.outputs.CSPROJ_EXIST == 'true' &&
         steps.check_files.outputs.SLN_EXIST == 'true' &&
         steps.check_files.outputs.DOCKERFILE_EXIST == 'true' &&
-        inputs.DOCKER_APP_NAME != '' &&
-        env.DEPLOY == 'true'
+        inputs.DOCKER_APP_NAME != ''
       shell: bash
       run: cp "${{github.workspace}}/Dockerfile" "${{github.workspace}}/server-dist/${{inputs.DOTNET_DOCKER_PLATFORM}}"
 
@@ -389,8 +397,7 @@ runs:
         steps.check_files.outputs.CSPROJ_EXIST == 'true' &&
         steps.check_files.outputs.SLN_EXIST == 'true' &&
         steps.check_files.outputs.HEALTHCHECK_EXIST == 'true' &&
-        inputs.DOCKER_APP_NAME != '' &&
-        env.DEPLOY == 'true'
+        inputs.DOCKER_APP_NAME != ''
       shell: bash
       run: cp "${{github.workspace}}/healthcheck" "${{github.workspace}}/server-dist/${{inputs.DOTNET_DOCKER_PLATFORM}}"
 
@@ -399,10 +406,8 @@ runs:
         steps.check_files.outputs.CSPROJ_EXIST == 'true' &&
         steps.check_files.outputs.SLN_EXIST == 'true' &&
         steps.check_files.outputs.DOCKERFILE_EXIST == 'true' &&
-        inputs.DOCKER_CONTAINER_REGISTRY != '' &&
         inputs.DOCKER_APP_OWNER != '' &&
-        inputs.DOCKER_APP_NAME != '' &&
-        env.DEPLOY == 'true'
+        inputs.DOCKER_APP_NAME != ''
       uses: ./.github/actions/docker-build-to-registry
       with:
         DEPLOY: ${{env.DEPLOY}}
@@ -422,10 +427,13 @@ runs:
         steps.check_files.outputs.SQL_EXIST == 'true' &&
         inputs.CLOUD_FORMATION_DEPLOY == 'true' &&
         inputs.DOCKER_APP_NAME != '' &&
+        inputs.SQL_SERVER != '' &&
+        inputs.SQL_DB != '' &&
+        inputs.SQL_USER != '' &&
+        inputs.SQL_PASSWORD != '' &&
         env.DEPLOY == 'true'
       uses: ./.github/actions/database-deploy
       with:
-        BUILD_VERSION: ${{env.BUILD_VERSION}}
         SQL_SERVER: "${{inputs.SQL_SERVER}}"
         SQL_DB: "${{inputs.SQL_DB}}"
         SQL_USER: "${{inputs.SQL_USER}}"
@@ -481,17 +489,11 @@ runs:
     ############################################################################################################
     - name: "Create Release"
       if: steps.build_tools.outputs.BUILD_ENV == 'true' && inputs.CREATE_RELEASE == 'true'
-      id: create_release
-      uses: ncipollo/release-action@v1.21.0
+      uses: ./.github/actions/create-release
       with:
-        tag: v${{env.BUILD_VERSION}}
-        name:  Release ${{env.BUILD_VERSION}}
-        bodyFile: "RELEASE_NOTES.md"
-        draft: false
-        prerelease: false
-        immutableCreate: true
-        generateReleaseNotes: true
-        token: ${{inputs.GITHUB_TOKEN}}
+        github-token: ${{inputs.GITHUB_TOKEN}}
+        version: ${{env.BUILD_VERSION}}
+        release-notes-file: "RELEASE_NOTES.md"
 
     ############################################################################################################
     # Software Bill of materials
@@ -500,7 +502,6 @@ runs:
       if: steps.build_tools.outputs.BUILD_ENV == 'true'
       uses: ./.github/actions/sbom
       with:
-        GITHUB_TOKEN: ${{inputs.GITHUB_TOKEN}}
         REPO_VISIBILITY: ${{inputs.REPO_VISIBILITY}}
 
     ############################################################################################################
@@ -509,5 +510,4 @@ runs:
     - name: "Upload SARIF file for diagnostics"
       uses: ./.github/actions/sarif
       with:
-        GITHUB_TOKEN: ${{inputs.GITHUB_TOKEN}}
         REPO_VISIBILITY: ${{inputs.REPO_VISIBILITY}}
