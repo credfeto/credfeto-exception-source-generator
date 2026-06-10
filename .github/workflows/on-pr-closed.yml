@@ -1,4 +1,5 @@
 --- # Cleanup on PR Close
+# Maintain in repo: funfair-server-template
 name: "PR: Closed"
 on:
   pull_request:
@@ -44,18 +45,17 @@ jobs:
           github-token: ${{secrets.SOURCE_PUSH_TOKEN}}
           script: |
             const ref = process.env.BRANCH;
-            const { data: cacheList } = await octokit.rest.actions.getActionsCacheList({
+            const caches = await github.paginate(github.rest.actions.getActionsCacheList, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: ref,
-              per_page: 100,
             });
-            core.info(`Found ${cacheList.total_count} cache(s) for ${ref}`);
+            core.info(`Found ${caches.length} cache(s) for ${ref}`);
             core.info('Deleting caches...');
-            for (const cache of cacheList.actions_caches) {
+            for (const cache of caches) {
               core.info(`Deleting cache: ${cache.key} (id: ${cache.id})`);
               try {
-                await octokit.rest.actions.deleteActionsCacheById({
+                await github.rest.actions.deleteActionsCacheById({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   cache_id: cache.id,
