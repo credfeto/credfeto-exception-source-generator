@@ -38,6 +38,10 @@ Prefer parameterised tests over duplicated test methods — each behavioural var
 - Test behaviour, not implementation — refactoring production code must not unnecessarily break tests.
 - Use constants, builders, or factory helpers rather than hardcoded values likely to change.
 
+## Mock Setup Helpers
+
+When a mock setup expression (NSubstitute, Moq, or equivalent) is used in more than one test, extract it into a dedicated `private static` method named `Mock<InterfaceName><MethodName>` — for example, `MockBranchClassificationIsPullRequest`. The helper accepts the mock instance and any variable arguments, and returns the configured mock (or `void` if chaining is not needed). Do not inline the same setup expression across multiple tests.
+
 ## Refactoring
 
 - Review code after writing and testing to determine whether refactoring is needed.
@@ -47,6 +51,22 @@ Prefer parameterised tests over duplicated test methods — each behavioural var
 ## Compile-Time Configuration
 
 Cover compile-time configuration (environment constants, build-time feature flags) with unit tests — not runtime assertions, which pollute production code.
+
+## Deprecation Warnings During Tests
+
+When deprecation warnings appear in test output (e.g. framework or runtime warnings about deprecated APIs):
+
+- **If the warning is new and caused by your change** — fix the deprecation before committing; do not leave it for later.
+- **If the warning is pre-existing and not caused by your change** — first check for an existing open GitHub issue in the current repository covering the same warning (for example by searching for the deprecated API, the warning text, and the affected component or dependency).
+  - If a matching open issue already exists, update it with any new context you found or reference it in your work; do not create a duplicate issue.
+  - If no matching open issue exists, raise a new GitHub issue in the current repository with:
+    - A clear title describing the deprecated API.
+    - The full warning text.
+    - The component or dependency responsible.
+    - What needs to be done to resolve it.
+    - Label the issue `AI-Work`.
+
+Do not suppress or ignore deprecation warnings.
 
 ## Code Complexity
 
