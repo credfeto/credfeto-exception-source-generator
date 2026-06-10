@@ -6,6 +6,20 @@
 
 Verify all required languages and runtimes are installed. If any are missing, stop — do not scaffold code or make partial changes; ask the user to install them first.
 
+## Environment Health (MANDATORY)
+
+If the environment is too broken to work in without first fixing infrastructure or tooling, **stop** and demand it be fixed. Do not work around broken tooling.
+
+## Pre-Commit Hook Verification (MANDATORY before blocking)
+
+Never block work based on inspecting config files and deducing that a tool might be missing. Always verify by actually running the hook:
+
+1. Stage your changes.
+2. Run the pre-commit hook directly: `<hooks-path>/pre-commit` (find the path with `git config --global core.hooksPath`).
+3. Only block if the hook **actually fails** with a real error.
+
+Inspecting `.pre-commit-config.yaml` and concluding a `language: system` tool is absent is not sufficient — the tool may be installed in a location not visible to `command -v` in the current shell context.
+
 ## Build and Test Verification (MANDATORY before any commit or push)
 
 Build must pass and all tests must pass before committing or pushing. If they fail and cannot be resolved, stop and ask.
@@ -22,6 +36,21 @@ Before any commit, verify identity and GPG signing are correct — see [git.exam
 - Never commit if the current branch is `main`.
 - If the branch has switched to `main` and the upstream no longer exists (merged and deleted), create a new branch before continuing.
 
+## GitHub CLI Comment Bodies (MANDATORY)
+
+When posting comment or PR bodies via the GitHub CLI (`gh issue comment`, `gh pr comment`, `gh pr create`, `gh pr edit`, etc.), always pass multi-line text using a HEREDOC so that real newline characters are embedded. **Never** use escaped `\n` sequences — GitHub renders them as literal characters, not line breaks:
+
+```bash
+gh issue comment <number> --repo <owner/repo> --body "$(cat <<'COMMENT'
+First paragraph.
+
+Second paragraph.
+COMMENT
+)"
+```
+
+This applies to any `--body` argument that contains or may contain newlines.
+
 ## GitHub Issues
 
 - If `gh` is available, use it to manage issues for every piece of work.
@@ -37,12 +66,25 @@ When `GH_HOST` is set to a value other than `github.com`, `gh` routes through a 
 - If a `gh` command fails, raise an issue on `credfeto/github-api-proxy` with the exact subcommand and flags, the API method (if visible), and the full error message.
 - Commit and push operations are always rejected by the proxy — use `git` CLI directly for all commit and push operations.
 
+## Running Git Commands in a Specific Directory
+
+- Always use `git -C <dir> <command>` — never `cd <dir> && git <command>`.
+- `git -C` runs the command in the specified directory without changing the shell's working directory, using a single invocation and avoiding leaving the shell in the wrong directory for subsequent commands.
+- In Claude Code the `cd` form also triggers an unnecessary permission prompt for the directory change itself.
+- This applies to all git subcommands: `git -C /path status`, `git -C /path add`, `git -C /path commit`, etc.
+
 ## Branching
 
 - All new work must be in a branch — never commit directly to `main`.
 - Ensure `main` is up-to-date with `origin` before starting.
 - Continue in the same branch until the task changes.
 - Before continuing work on an existing branch, check if `origin/main` has advanced — if so, rebase first.
+
+## Pushing Branches
+
+- **Always push a new branch with `-u`** to set up tracking: `git -C <repodir> push -u origin <branch>`.
+- Subsequent pushes on a tracked branch can use `git -C <repodir> push`.
+- **Never push without `-u` on the first push** — without it the branch has no upstream and later `git push` and `git pull` commands will fail.
 
 ## Branch Naming
 
@@ -67,6 +109,10 @@ After any push, if the remote reports vulnerabilities:
 
 - Check for open Dependabot PRs covering them (`gh pr list --label dependencies`).
 - If none exist, visit the repo's Dependabot page and for any manually fixable advisory create a GitHub issue labelled `Security` and `AI-Work`, naming the package, severity, and fix steps.
+
+## Pre-Commit Hook Known Incompatibilities
+
+- **dotenv-linter**: use `entry: dotenv-linter check` — v3.x requires the `check` subcommand before the filename.
 
 ## Template Rule Escalation (Non-Template Repos Only)
 
