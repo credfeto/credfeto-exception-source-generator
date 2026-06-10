@@ -1,6 +1,6 @@
 # Firewall Script Examples
 
-[Back to Global Instructions Index](index.md)
+[Back to Shell Firewall Instructions](shell.firewall.instructions.md) | [Back to Global Instructions Index](index.md)
 
 Reference implementations for the firewall helpers described in [shell.firewall.instructions.md](shell.firewall.instructions.md). Load this file when actively writing or modifying firewall scripts.
 
@@ -51,8 +51,6 @@ open_port_for_private_networks() {
     for subnet in "${IPV6_PRIVATE_RANGES[@]}"; do
         allow_ipv6 "${subnet}" "${port}" "${protocol}"
     done
-
-    firewall-cmd --reload
 }
 ```
 
@@ -63,6 +61,7 @@ To allow a port from all private networks (both IPv4 and IPv6):
 ```bash
 open_port_for_private_networks 8080 tcp
 open_port_for_private_networks 53 udp
+firewall-cmd --reload
 ```
 
 To allow a single specific subnet:
