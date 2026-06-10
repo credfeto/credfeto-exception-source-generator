@@ -1,20 +1,9 @@
+--- # Build: pre-release package build and publish
+# Maintain in repo: funfair-server-template
 name: "Build: Pre-Release"
 
 on:
   push:
-    paths:
-      - 'cloudformation.json'
-      - 'Dockerfile'
-      - 'healthcheck'
-      - 'db/**/*'
-      - 'src/**/*'
-      - '.editorconfig'
-      - '.github/actions/**/*'
-      - '.github/workflows/*'
-      - '**/package.json'
-      - '**/package-lock.json'
-      - 'package.json'
-      - 'package-lock.json'
     branches-ignore:
       - 'release/*'
       - 'hotfix/*'
@@ -82,7 +71,6 @@ jobs:
         with:
           github-token: ${{secrets.SOURCE_PUSH_TOKEN}}
           use-nuget-cache: ${{vars.USE_NUGET_CACHE}}
-          repo-status: ${{vars.REPO_VISIBILITY}}
           nuget-baget-cache: ${{vars.NUGET_BAGET_CACHE}}
           prerelease-baget-cache: ${{vars.PRERELEASE_BAGET_CACHE}}
           release-baget-cache: ${{vars.RELEASE_BAGET_CACHE}}
