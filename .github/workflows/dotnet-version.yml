@@ -1,4 +1,5 @@
---- # Create a new branch for the latest (released) dotnet version if there's an update
+---  # Create a new branch for the latest (released) dotnet version if there's an update
+# Maintain in repo: funfair-server-template
 name: "Repo: Update Dotnet Version to latest released version"
 on:
   push:
@@ -6,6 +7,8 @@ on:
       - "main"
     paths:
       - ".github/workflows/dotnet-version.yml"
+      - ".github/actions/dotnet-install/**"
+      - ".github/actions/nuget/**"
   schedule:
     - cron: "0 1 * * *"
 
@@ -13,14 +16,13 @@ concurrency:
   group: ${{github.workflow}}-${{github.ref}}
   cancel-in-progress: false
 
-permissions:
-  contents: write
-
-
 jobs:
   bump-dotnet-sdk-version:
     if: endsWith(github.repository, 'funfair-server-template')
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
 
     steps:
       - name: "Check Required Secrets"
@@ -48,25 +50,27 @@ jobs:
       - name: "Checkout Source"
         uses: actions/checkout@v6.0.3
         with:
+          ref: ${{ github.head_ref }}
           clean: true
-          fetch-depth: 1
+          fetch-depth: 0
           token: ${{secrets.SOURCE_PUSH_TOKEN}}
+          persist-credentials: true
 
-      - name: "Install Build tools"
+      - name: "Install dotnet"
         if: runner.environment == 'self-hosted'
-        uses: ./.github/actions/build-tools
+        uses: ./.github/actions/dotnet-install
         with:
           GITHUB_TOKEN: ${{secrets.SOURCE_PUSH_TOKEN}}
           NUGET_PUBLIC_RESTORE_FEED_CACHE: ${{vars.NUGET_BAGET_CACHE}}
           NUGET_PUBLIC_RESTORE_FEED: ${{vars.NUGET_PUBLIC_RESTORE_FEED || 'https://api.nuget.org/v3/index.json'}}
           NUGET_ADDITIONAL_RESTORE_FEED_RELEASE_CACHE: ${{vars.RELEASE_BAGET_CACHE}}
-          NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE_CACHE: ${{vars.PRERELEASE_BAGET_CACHE}}
+          NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE_CACHE: ""
           NUGET_ADDITIONAL_RESTORE_FEED_RELEASE: ${{vars.NUGET_ADDITIONAL_RESTORE_FEED_RELEASE}}
-          NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE: ${{vars.NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE}}
+          NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE: ""
 
-      - name: "Install Build tools"
+      - name: "Install dotnet"
         if: runner.environment != 'self-hosted'
-        uses: ./.github/actions/build-tools
+        uses: ./.github/actions/dotnet-install
         with:
           GITHUB_TOKEN: ${{secrets.SOURCE_PUSH_TOKEN}}
           NUGET_PUBLIC_RESTORE_FEED_CACHE: ""
@@ -76,90 +80,59 @@ jobs:
           NUGET_ADDITIONAL_RESTORE_FEED_RELEASE: ${{vars.NUGET_ADDITIONAL_RESTORE_FEED_RELEASE}}
           NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE: ${{vars.NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE}}
 
-      - name: "Get latest installed dotnet version"
+      - name: "Get latest available dotnet version"
         id: latest-dotnet-version
         shell: bash
         run: |
-          echo "Versions installed:"
-          dotnet --list-sdks | cut -f 1 -d " " | grep "^[0-9]*\.[0-9]*\.[0-9]*$" | sort --version-sort
-          echo "Latest Version: $(dotnet --list-sdks | cut -f 1 -d " " | grep "^[0-9]*\.[0-9]*\.[0-9]*$" | sort --version-sort | tail -1)"
-          echo "LATEST_RELEASE_VERSION=$(dotnet --list-sdks | cut -f 1 -d " " | grep "^[0-9]*\.[0-9]*\.[0-9]*$" | sort --version-sort | tail -1)" >> "$GITHUB_OUTPUT"
-
-      - name: "Display latest installed dotnet version"
-        shell: bash
-        run: |
-          echo "Latest installed dotnet version: ${{steps.latest-dotnet-version.outputs.LATEST_RELEASE_VERSION}}"
-          echo "Requested dotnet version: ${{env.DOTNET_VERSION}}"
+          LATEST=$(curl \
+            --max-time 120 \
+            --retry 5 \
+            --retry-delay 0 \
+            --retry-max-time 600 \
+            -sS \
+            -L \
+            -f \
+            https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json |
+            jq -re '
+              ."releases-index"
+              | map(select(."support-phase" == "active"))
+              | sort_by(."channel-version" | split(".") | map(tonumber))
+              | last
+              | ."latest-sdk"
+            ')
+          if [[ -z "$LATEST" || "$LATEST" == "null" ]]; then
+            echo "::error::Failed to determine latest active .NET SDK version from releases-index.json"
+            exit 1
+          fi
+          echo "Latest available SDK: $LATEST (current: $DOTNET_VERSION)"
+          echo "LATEST_RELEASE_VERSION=$LATEST" >> "$GITHUB_OUTPUT"
 
       - name: "Check if Latest is newer than the current defined"
         id: upgrade_check
         shell: bash
         run: |
-          VER=$(echo "${{env.DOTNET_VERSION}} ${{steps.latest-dotnet-version.outputs.LATEST_RELEASE_VERSION}}" | tr ' ' '\n' | uniq | sort --version-sort | tail -1)
+          CURRENT_VER="${{env.DOTNET_VERSION}}"
+          LATEST_RELEASE_VER="${{steps.latest-dotnet-version.outputs.LATEST_RELEASE_VERSION}}"
+          VER=$(echo "$CURRENT_VER $LATEST_RELEASE_VER" | tr ' ' '\n' | uniq | sort --version-sort | tail -1)
           echo "Latest Version: $VER"
-          [[ "$VER" == "${{steps.latest-dotnet-version.outputs.LATEST_RELEASE_VERSION}}" ]] && echo "NEW_VERSION=true" >> "$GITHUB_OUTPUT" || echo "NEW_VERSION=false" >> "$GITHUB_OUTPUT"
+          [[ "$VER" == "$LATEST_RELEASE_VER" ]] && echo "NEW_VERSION=true" >> "$GITHUB_OUTPUT" || echo "NEW_VERSION=false" >> "$GITHUB_OUTPUT"
 
-      - name: "Ensure branch and update global.json"
+      - name: "Update global.json"
         if: steps.upgrade_check.outputs.NEW_VERSION == 'true'
-        uses: actions/github-script@v9.0.0
+        shell: bash
+        run: |
+          VERSION="${{steps.latest-dotnet-version.outputs.LATEST_RELEASE_VERSION}}"
+          jq --arg ver "$VERSION" '.sdk.version = $ver' src/global.json > src/global.json.tmp && mv src/global.json.tmp src/global.json
+
+      - name: "Commit changes to new branch"
+        if: steps.upgrade_check.outputs.NEW_VERSION == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v7.1.0
         with:
-          github-token: ${{secrets.SOURCE_PUSH_TOKEN}}
-          script: |
-            const version = process.env.NEW_DOTNET_VERSION;
-            const branchName = `depends/dotnet/${version}`;
-            const branchRef = `heads/${branchName}`;
-
-            const { data: mainRef } = await octokit.rest.git.getRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'heads/main',
-            });
-
-            try {
-              await octokit.rest.git.getRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: branchRef,
-              });
-              core.info(`Branch ${branchName} already exists`);
-            } catch (err) {
-              if (err.status !== 404) throw err;
-              await octokit.rest.git.createRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: `refs/${branchRef}`,
-                sha: mainRef.object.sha,
-              });
-              core.info(`Created branch ${branchName}`);
-            }
-
-            const { data: fileData } = await octokit.rest.repos.getContent({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              path: 'src/global.json',
-              ref: branchName,
-            });
-            const globalJson = JSON.parse(Buffer.from(fileData.content, 'base64').toString('utf8'));
-
-            if (globalJson.sdk && globalJson.sdk.version === version) {
-              core.info(`global.json already at version ${version}, nothing to do`);
-              return;
-            }
-
-            globalJson.sdk.version = version;
-            const updated = JSON.stringify(globalJson, null, 2) + '\n';
-
-            await octokit.rest.repos.createOrUpdateFileContents({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              path: 'src/global.json',
-              message: `SDK - Update DotNet SDK to ${version}`,
-              content: Buffer.from(updated).toString('base64'),
-              sha: fileData.sha,
-              branch: branchName,
-              committer: { name: 'fun-version[bot]', email: 'credfeto@users.noreply.github.com' },
-              author: { name: 'fun-version[bot]', email: 'credfeto@users.noreply.github.com' },
-            });
-            core.info(`Updated global.json to ${version} on branch ${branchName}`);
-        env:
-          NEW_DOTNET_VERSION: ${{steps.latest-dotnet-version.outputs.LATEST_RELEASE_VERSION}}
+          commit_message: "SDK - Update DotNet SDK to ${{steps.latest-dotnet-version.outputs.LATEST_RELEASE_VERSION}}"
+          branch: "depends/dotnet/${{steps.latest-dotnet-version.outputs.LATEST_RELEASE_VERSION}}"
+          file_pattern: src/global.json
+          commit_user_name: "fun-version[bot]"
+          commit_user_email: "credfeto@users.noreply.github.com"
+          commit_author: "fun-version[bot] <credfeto@users.noreply.github.com>"
+          skip_dirty_check: false
+          create_branch: true
