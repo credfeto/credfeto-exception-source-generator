@@ -1,3 +1,5 @@
+--- # PR: update pull request metadata
+# Maintain in repo: funfair-server-template
 name: "PR: Update"
 on:
   pull_request:
@@ -11,6 +13,9 @@ on:
 concurrency:
   group: ${{github.workflow}}-${{github.ref}}
   cancel-in-progress: false
+
+permissions:
+  contents: read
 
 env:
   HEAD_REF: ${{github.head_ref}}
@@ -96,10 +101,10 @@ jobs:
   assign-to-creator:
     needs: [requirements]
     if: |-
-      ${{!github.event.pull_request.assignee.login
+      !github.event.pull_request.assignee.login
       && github.event_name == 'pull_request'
       && ( github.event.action == 'opened' || github.event.action == 'reopened')
-      && github.actor != 'dependabot[bot]'}}
+      && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: "Initialise Workspace"
