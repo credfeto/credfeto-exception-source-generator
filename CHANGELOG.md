@@ -12,7 +12,11 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Security
 ### Added
 ### Fixed
+- Removed tracked IDE file that was inadvertently committed despite being in .gitignore
+- Fixed AnalyzerReleases.Shipped.md and AnalyzerReleases.Unshipped.md to use correct release tracking format required by RS2007
+- Cleared AnalyzerReleases.Unshipped.md - Microsoft.CodeAnalysis.Analyzers 5.3.0 requires empty file when no unreleased entries exist
 ### Changed
+- SDK - Updated DotNet SDK to 10.0.301
 ### Deprecated
 ### Removed
 ### Deployment Changes
