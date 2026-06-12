@@ -12,17 +12,21 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Security
 ### Added
 ### Fixed
-- Removed tracked IDE file that was inadvertently committed despite being in .gitignore
-- Fixed AnalyzerReleases.Shipped.md and AnalyzerReleases.Unshipped.md to use correct release tracking format required by RS2007
-- Cleared AnalyzerReleases.Unshipped.md - Microsoft.CodeAnalysis.Analyzers 5.3.0 requires empty file when no unreleased entries exist
 ### Changed
-- SDK - Updated DotNet SDK to 10.0.301
 ### Deprecated
 ### Removed
 ### Deployment Changes
 <!--
 Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
 -->
+## [0.0.3] - 2026-06-12
+### Fixed
+- Removed tracked IDE file that was inadvertently committed despite being in .gitignore
+- Fixed AnalyzerReleases.Shipped.md and AnalyzerReleases.Unshipped.md to use correct release tracking format required by RS2007
+- Cleared AnalyzerReleases.Unshipped.md - Microsoft.CodeAnalysis.Analyzers 5.3.0 requires empty file when no unreleased entries exist
+### Changed
+- SDK - Updated DotNet SDK to 10.0.301
+
 ## [0.0.2] - 2026-06-08
 ### Added
 - Unit test for exception code builder with abstract exceptions and special character escaping
