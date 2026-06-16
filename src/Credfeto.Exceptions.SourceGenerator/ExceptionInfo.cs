@@ -7,7 +7,7 @@ namespace Credfeto.Exceptions.SourceGenerator;
 ///     Holds the information extracted from a partial exception class declaration needed to generate constructors.
 /// </summary>
 [DebuggerDisplay("{DebugDisplayName,nq}")]
-internal readonly struct ExceptionInfo : IEquatable<ExceptionInfo>
+public readonly struct ExceptionInfo : IEquatable<ExceptionInfo>
 {
     /// <summary>
     ///     Initialises a new instance of the <see cref="ExceptionInfo" /> struct.

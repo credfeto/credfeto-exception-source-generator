@@ -109,12 +109,12 @@ public sealed class ExceptionMissingConstructorAnalyzer : DiagnosticAnalyzer
         );
     }
 
-    internal static bool IsDefaultConstructor(IMethodSymbol method)
+    private static bool IsDefaultConstructor(IMethodSymbol method)
     {
         return !method.IsStatic && method.Parameters.Length == 0;
     }
 
-    internal static bool IsMessageConstructor(IMethodSymbol method)
+    private static bool IsMessageConstructor(IMethodSymbol method)
     {
         if (method.IsStatic || method.Parameters.Length != 1)
         {
@@ -127,7 +127,7 @@ public sealed class ExceptionMissingConstructorAnalyzer : DiagnosticAnalyzer
             && string.Equals(param.Name, "message", StringComparison.Ordinal);
     }
 
-    internal static bool IsMessageAndInnerExceptionConstructor(IMethodSymbol method)
+    private static bool IsMessageAndInnerExceptionConstructor(IMethodSymbol method)
     {
         if (method.IsStatic || method.Parameters.Length != 2)
         {
