@@ -12,6 +12,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Security
 ### Added
 ### Fixed
+- Removed InternalsVisibleTo and made internal types public to comply with FFS0051 rule introduced in FunFair.CodeAnalysis 7.2.1.2035
 ### Changed
 - Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.127.1265
 - Dependencies - Updated FunFair.CodeAnalysis to 7.2.1.2035
