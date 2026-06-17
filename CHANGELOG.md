@@ -12,17 +12,21 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Security
 ### Added
 ### Fixed
-- Removed InternalsVisibleTo and made internal types public to comply with FFS0051 rule introduced in FunFair.CodeAnalysis 7.2.1.2035
 ### Changed
-- Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.127.1265
-- Dependencies - Updated FunFair.CodeAnalysis to 7.2.1.2035
-- Dependencies - Updated Meziantou.Analyzer to 3.0.102
 ### Deprecated
 ### Removed
 ### Deployment Changes
 <!--
 Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
 -->
+## [0.0.4] - 2026-06-17
+### Fixed
+- Removed InternalsVisibleTo and made internal types public to comply with FFS0051 rule introduced in FunFair.CodeAnalysis 7.2.1.2035
+### Changed
+- Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.127.1265
+- Dependencies - Updated FunFair.CodeAnalysis to 7.2.1.2035
+- Dependencies - Updated Meziantou.Analyzer to 3.0.102
+
 ## [0.0.3] - 2026-06-12
 ### Fixed
 - Removed tracked IDE file that was inadvertently committed despite being in .gitignore
