@@ -23,9 +23,9 @@
     <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
     <LangVersion>latest</LangVersion>
+    <MSBuildWarningsAsMessages>MSB3243</MSBuildWarningsAsMessages>
     <NeutralLanguage>en-GB</NeutralLanguage>
     <NoWarn />
-    <MSBuildWarningsAsMessages>MSB3243</MSBuildWarningsAsMessages>
     <NuGetAudit>true</NuGetAudit>
     <NuGetAuditLevel>high</NuGetAuditLevel>
     <NuGetAuditMode>all</NuGetAuditMode>
