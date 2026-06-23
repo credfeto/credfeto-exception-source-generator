@@ -15,6 +15,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Changed
 - Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.130.1322
 - Dependencies - Updated Meziantou.Analyzer to 3.0.109
+- Dependencies - Updated Microsoft.VisualStudio.Threading.Analyzers to 18.7.23
 ### Deprecated
 ### Removed
 ### Deployment Changes
