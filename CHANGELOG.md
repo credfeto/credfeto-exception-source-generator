@@ -14,12 +14,12 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Fixed
 ### Changed
 - Dependencies - Updated FunFair.CodeAnalysis to 7.2.4.2117
-- Dependencies - Updated FunFair.Test to 6.3.3.2407
 - Dependencies - Updated FunFair.Test.Source.Generator to 6.3.3.2407
 - Dependencies - Updated Meziantou.Analyzer to 3.0.122
 - Dependencies - Updated Microsoft.CodeAnalysis.Analyzers to 5.6.0
 - Dependencies - Updated Microsoft.CodeAnalysis.CSharp to 5.6.0
 - Dependencies - Updated SonarAnalyzer.CSharp to 10.29.0.143774
+- Dependencies - Updated FunFair.Test to 6.3.4.2441
 ### Deprecated
 ### Removed
 ### Deployment Changes
