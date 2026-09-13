@@ -17,6 +17,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.137.1543
 - Dependencies - Updated CSharpIsNullAnalyzer to 0.2.19
 - Dependencies - Updated Meziantou.Analyzer to 3.0.253
+- Dependencies - Updated Microsoft.CodeAnalysis.Analyzers to 5.9.0
 ### Deprecated
 ### Removed
 ### Deployment Changes
