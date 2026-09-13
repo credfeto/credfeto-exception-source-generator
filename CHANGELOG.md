@@ -14,7 +14,6 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Fixed
 ### Changed
 - SDK - Updated DotNet SDK to 10.0.401
-- Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.137.1543
 - Dependencies - Updated CSharpIsNullAnalyzer to 0.2.19
 - Dependencies - Updated Microsoft.CodeAnalysis.Analyzers to 5.9.0
 - Dependencies - Updated Microsoft.CodeAnalysis.CSharp to 5.9.0
@@ -27,6 +26,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Meziantou.Analyzer to 3.0.257
 - Dependencies - Updated xunit.analyzers to 2.1.0
 - Dependencies - Updated xunit.v3 to 4.0.1
+- Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.138.1557
 ### Deprecated
 ### Removed
 ### Deployment Changes
