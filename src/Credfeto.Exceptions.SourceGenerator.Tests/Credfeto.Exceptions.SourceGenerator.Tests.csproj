@@ -56,13 +56,22 @@
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-xhfc-gr8f-ffwc" />
   </ItemGroup>
   <Import Project="$(SolutionDir)UnitTests.props" Condition="Exists('$(SolutionDir)UnitTests.props')" />
+  <!-- The netstandard2.0 SourceGenerator project's own Microsoft.CodeAnalysis.CSharp closure pulls in this
+       netstandard2.0 ValueTask polyfill via the ProjectReference above; net10.0 already supplies ValueTask
+       via System.Runtime, so drop the polyfill from the resolved references to avoid the resulting CS0433
+       once xunit.v3.aot.mtp-v2's generators emit unqualified ValueTask references. -->
+  <Target Name="RemoveConflictingValueTaskFacade" AfterTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <ReferencePath Remove="@(ReferencePath)" Condition="'%(FileName)' == 'System.Threading.Tasks.Extensions'" />
+    </ItemGroup>
+  </Target>
   <ItemGroup>
-    <ProjectReference Include="..\Credfeto.Exceptions.SourceGenerator\Credfeto.Exceptions.SourceGenerator.csproj" />
+    <ProjectReference Include="../Credfeto.Exceptions.SourceGenerator/Credfeto.Exceptions.SourceGenerator.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FunFair.Test.Common" Version="6.3.4.2441" />
-    <PackageReference Include="NSubstitute" Version="6.2.0" />
-    <PackageReference Include="xunit.v3.mtp-v2" Version="4.0.1" />
+    <PackageReference Include="FunFair.Test.Common" Version="6.4.6.2749" IncludeAssets="compile;runtime" />
+    <PackageReference Include="NSubstitute" Version="6.2.0" IncludeAssets="compile;runtime" />
+    <PackageReference Include="xunit.v3.aot.mtp-v2" Version="4.0.1" IncludeAssets="all" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="2.1.0" PrivateAssets="All" ExcludeAssets="runtime" />
