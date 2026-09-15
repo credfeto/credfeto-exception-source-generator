@@ -4,16 +4,16 @@ A C# Roslyn incremental source generator that generates standard exception const
 
 ## Build Status
 
-| Branch  | Status                                                                                                                                                                                                                                                                                                                                      |
-|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Branch  | Status                                                                                                                                                                                                                                                                      |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | main    | [![Build: Pre-Release](https://github.com/credfeto/credfeto-exception-source-generator/actions/workflows/build-and-publish-pre-release.yml/badge.svg)](https://github.com/credfeto/credfeto-exception-source-generator/actions/workflows/build-and-publish-pre-release.yml) |
 | release | [![Build: Release](https://github.com/credfeto/credfeto-exception-source-generator/actions/workflows/build-and-publish-release.yml/badge.svg)](https://github.com/credfeto/credfeto-exception-source-generator/actions/workflows/build-and-publish-release.yml)             |
 
 ## NuGet Packages
 
-| Package                                         | Version                                                                                                                                                                                                                                                   |
-|-------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Credfeto.Exceptions.SourceGenerator`           | [![NuGet](https://img.shields.io/nuget/v/Credfeto.Exceptions.SourceGenerator.svg)](https://www.nuget.org/packages/Credfeto.Exceptions.SourceGenerator/)           |
+| Package                                         | Version                                                                                                                                                                     |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Credfeto.Exceptions.SourceGenerator`           | [![NuGet](https://img.shields.io/nuget/v/Credfeto.Exceptions.SourceGenerator.svg)](https://www.nuget.org/packages/Credfeto.Exceptions.SourceGenerator/)                     |
 | `Credfeto.Exceptions.SourceGenerator.CodeFixes` | [![NuGet](https://img.shields.io/nuget/v/Credfeto.Exceptions.SourceGenerator.CodeFixes.svg)](https://www.nuget.org/packages/Credfeto.Exceptions.SourceGenerator.CodeFixes/) |
 
 ## Overview
@@ -126,8 +126,8 @@ The code fix will:
 
 ## Analyzer Rules
 
-| Rule ID   | Category | Severity | Notes                                               |
-|-----------|----------|----------|-----------------------------------------------------|
+| Rule ID   | Category | Severity | Notes                                                 |
+| --------- | -------- | -------- | ----------------------------------------------------- |
 | EXCGEN001 | Design   | Info     | Exception class can use source-generated constructors |
 
 ## Technical Details
