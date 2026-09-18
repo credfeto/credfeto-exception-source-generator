@@ -14,7 +14,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Fixed
 - Corrected MSBuild backslash path separators in shared .props files and realigned README.md tables to restore a clean pre-commit baseline (markdownlint, check-msbuild-path-separator); AnalyzerReleases.Shipped.md's markdownlint findings are left unresolved pending credfeto/cs-template#1082, since editing that Roslyn-mandated file content or the repo's protected .markdownlintignore both break the build
 ### Changed
-- Dependencies - Updated Meziantou.Analyzer to 3.0.259
+- Dependencies - Updated Meziantou.Analyzer to 3.0.260
 ### Deprecated
 ### Removed
 ### Deployment Changes
