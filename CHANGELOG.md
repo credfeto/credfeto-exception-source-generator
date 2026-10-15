@@ -12,6 +12,17 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Security
 ### Added
 ### Fixed
+### Changed
+### Deprecated
+### Removed
+### Deployment Changes
+
+<!--
+Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
+-->
+
+## [0.0.13] - 2026-10-15
+### Fixed
 - Corrected MSBuild backslash path separators in shared .props files and realigned README.md tables to restore a clean pre-commit baseline (markdownlint, check-msbuild-path-separator); AnalyzerReleases.Shipped.md's markdownlint findings are left unresolved pending credfeto/cs-template#1082, since editing that Roslyn-mandated file content or the repo's protected .markdownlintignore both break the build
 ### Changed
 - Dependencies - Updated Microsoft.Sbom.Targets to 4.1.13
@@ -23,13 +34,6 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Meziantou.Analyzer to 3.0.303
 - SDK - Updated DotNet SDK to 10.0.402
 - Dependencies - Updated FunFair.CodeAnalysis to 7.2.20.2501
-### Deprecated
-### Removed
-### Deployment Changes
-
-<!--
-Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
--->
 
 ## [0.0.12] - 2026-09-14
 ### Changed
