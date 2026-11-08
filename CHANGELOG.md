@@ -17,7 +17,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated FunFair.Test.Source.Generator to 6.4.7.2960
 - Dependencies - Updated Nullable.Extended.Analyzer to 1.19.0
 - SDK - Updated DotNet SDK to 11.0.100-rc.3.26522.148
-- Target .NET 11 SDK and enable runtime-async
+- Tests - Test project now targets .NET 11 and enables runtime-async, so the test suite exercises the new runtime async behaviour
 ### Deprecated
 ### Removed
 ### Deployment Changes
