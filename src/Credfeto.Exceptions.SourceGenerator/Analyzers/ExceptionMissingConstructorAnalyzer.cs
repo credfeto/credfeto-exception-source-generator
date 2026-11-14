@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
+using Credfeto.SourceGeneration.Helpers.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -9,17 +10,13 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Credfeto.Exceptions.SourceGenerator.Analyzers;
 
-/// <summary>
-///     Diagnostic analyzer that identifies non-partial exception classes whose constructors could be source-generated.
-/// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ExceptionMissingConstructorAnalyzer : DiagnosticAnalyzer
 {
-    /// <summary>
-    ///     The diagnostic ID reported when an exception class has standard constructors that can be source-generated.
-    /// </summary>
     public const string DiagnosticId = "EXCGEN001";
 
+    // Constructed directly rather than via RuleHelpers.CreateRule: Roslyn's release tracking analyzers (RS2000-RS2008)
+    // only recognise a rule from a DiagnosticDescriptor constructor call, so a helper-built rule fails with RS2003.
     private static readonly DiagnosticDescriptor Rule = new(
         id: DiagnosticId,
         title: "Exception class can use source-generated constructors",
@@ -30,10 +27,8 @@ public sealed class ExceptionMissingConstructorAnalyzer : DiagnosticAnalyzer
         description: "Exception classes with standard constructors should use the Credfeto.Exceptions.SourceGenerator source generator to reduce boilerplate."
     );
 
-    /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => SupportedDiagnosticsList.Build(Rule);
 
-    /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
