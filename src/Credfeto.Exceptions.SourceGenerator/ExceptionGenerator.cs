@@ -1,20 +1,15 @@
-﻿using System;
-using System.Text;
+using System;
 using System.Threading;
+using Credfeto.SourceGeneration.Helpers.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 
 namespace Credfeto.Exceptions.SourceGenerator;
 
-/// <summary>
-///     Incremental source generator that generates standard exception constructors for partial exception classes.
-/// </summary>
 [Generator]
 public sealed class ExceptionGenerator : IIncrementalGenerator
 {
-    /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         IncrementalValuesProvider<ExceptionInfo> exceptionInfos = context
@@ -89,11 +84,7 @@ public sealed class ExceptionGenerator : IIncrementalGenerator
         foreach (AttributeData attribute in symbol.GetAttributes())
         {
             if (
-                string.Equals(
-                    attribute.AttributeClass?.ToDisplayString(),
-                    "System.ComponentModel.DescriptionAttribute",
-                    StringComparison.Ordinal
-                )
+                attribute.IsDescriptionAttribute()
                 && attribute.ConstructorArguments.Length > 0
                 && attribute.ConstructorArguments[0].Value is string description
             )
@@ -121,7 +112,6 @@ public sealed class ExceptionGenerator : IIncrementalGenerator
 
     private static void Execute(in SourceProductionContext context, in ExceptionInfo info)
     {
-        string source = ExceptionCodeBuilder.Build(info);
-        context.AddSource($"{info.ClassName}.g.cs", SourceText.From(source, Encoding.UTF8));
+        context.AddSource($"{info.ClassName}.g.cs", ExceptionCodeBuilder.Build(info));
     }
 }
