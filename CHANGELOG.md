@@ -18,6 +18,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Nullable.Extended.Analyzer to 1.19.0
 - Tests - Test project now targets .NET 11 and enables runtime-async, so the test suite exercises the new runtime async behaviour
 - SDK - Updated DotNet SDK to 11.0.100
+- Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.142.1766
 ### Deprecated
 ### Removed
 ### Deployment Changes
