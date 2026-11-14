@@ -19,6 +19,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Tests - Test project now targets .NET 11 and enables runtime-async, so the test suite exercises the new runtime async behaviour
 - SDK - Updated DotNet SDK to 11.0.100
 - Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.142.1766
+- Dependencies - Updated FunFair.CodeAnalysis to 7.2.25.2636
 ### Deprecated
 ### Removed
 ### Deployment Changes
