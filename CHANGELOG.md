@@ -20,6 +20,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - SDK - Updated DotNet SDK to 11.0.100
 - Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.142.1766
 - Dependencies - Updated FunFair.CodeAnalysis to 7.2.25.2636
+- Dependencies - Updated Meziantou.Analyzer to 3.0.339
 ### Deprecated
 ### Removed
 ### Deployment Changes
