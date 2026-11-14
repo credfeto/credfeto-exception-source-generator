@@ -14,10 +14,10 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Tests - Added generator and analyzer tests covering exception constructor generation and the missing-constructor analyzer
 ### Fixed
 ### Changed
-- Dependencies - Updated FunFair.CodeAnalysis to 7.2.26.2691
 - Dependencies - Updated Meziantou.Analyzer to 3.0.340
 - Dependencies - Updated Philips.CodeAnalysis.MaintainabilityAnalyzers to 2.2.0
 - Source generator now uses the shared Credfeto.SourceGeneration.Helpers package for code emission, description-attribute lookup and diagnostic registration, so its behaviour is maintained in one place alongside other Credfeto generators
+- Dependencies - Updated FunFair.CodeAnalysis to 7.2.27.2695
 ### Deprecated
 ### Removed
 ### Deployment Changes
