@@ -11,6 +11,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ## [Unreleased]
 ### Security
 ### Added
+- Tests - Added generator and analyzer tests covering exception constructor generation and the missing-constructor analyzer
 ### Fixed
 ### Changed
 - Dependencies - Updated FunFair.Test to 6.4.7.2960
@@ -26,7 +27,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated SonarAnalyzer.CSharp to 10.36.0.15337
 - Dependencies - Updated xunit.analyzers to 2.3.0
 - Dependencies - Updated xunit.v3 to 4.0.3
-- Replaced hand-rolled source-generator plumbing (code emission, diagnostic descriptors, description-attribute lookup) with the shared Credfeto.SourceGeneration.Helpers package
+- Source generator now uses the shared Credfeto.SourceGeneration.Helpers package for code emission, description-attribute lookup and diagnostic registration, so its behaviour is maintained in one place alongside other Credfeto generators
 ### Deprecated
 ### Removed
 ### Deployment Changes
