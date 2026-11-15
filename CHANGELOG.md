@@ -18,6 +18,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dependencies - Updated Philips.CodeAnalysis.MaintainabilityAnalyzers to 2.2.0
 - Source generator now uses the shared Credfeto.SourceGeneration.Helpers package for code emission, description-attribute lookup and diagnostic registration, so its behaviour is maintained in one place alongside other Credfeto generators
 - Dependencies - Updated FunFair.CodeAnalysis to 7.2.28.2699
+- Dependencies - Updated Credfeto.Version.Information.Generator to 1.0.143.1843
 ### Deprecated
 ### Removed
 ### Deployment Changes
